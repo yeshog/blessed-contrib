@@ -246,7 +246,33 @@ setInterval(() => {
   yhioeGlobalSiteStats();
 }, 3000);
 
+function yhioeCheckArgs() {
+  const cwd = process.cwd();
+  var path = require('path');
+  process.argv.forEach(function (val, index, array) {
+    var secdatapath = null, secdatatagpath = null;
+    if (val.indexOf('--secdatapath=') >= 0) {
+      secdatapath = val.split('=')[1];
+    }
+    if (val.indexOf('--secdatatagpath=') >= 0) {
+      secdatatagpath = val.split('=')[1];
+    }
+    if (secdatapath && secdatatagpath) {
+      contrib.yhioeLiveData.secDataPath = secdatapath;
+      contrib.yhioeLiveData.secDataTagPath = secdatatagpath;
+    } else {
+      contrib.yhioeLiveData.secDataPath =
+        path.join(cwd, '.secData');
+      contrib.yhioeLiveData.secDataTagPath =
+        path.join(cwd, '.secDataTag');
+    }
+    yhioeLogMsg('Using ' +
+      contrib.yhioeLiveData.secDataTagPath + ' ' +
+      contrib.yhioeLiveData.secDataPath);
+  });
+}
+
+yhioeCheckArgs();
 contrib.authenticateAndFetch('/n/g', null,
   yhioeSetActivityTableData, null);
 screen.render();
-
