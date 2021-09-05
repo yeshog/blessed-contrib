@@ -1,19 +1,19 @@
 var blessed = require('blessed')
-  , contrib = require('../index')
+  , contrib = require('../index');
 var _ = require('lodash');
 
 var screen = blessed.screen({
-    smartCSR: true,
-    useBCE: true,
-    cursor: {
-        artificial: true,
-        blink: true,
-        shape: 'underline'
-    }})
+  smartCSR: true,
+  useBCE: true,
+  cursor: {
+    artificial: true,
+    blink: true,
+    shape: 'underline'
+  }});
 
 //create layout and widgets
 
-var grid = new contrib.grid({rows: 12, cols: 12, screen: screen})
+var grid = new contrib.grid({rows: 12, cols: 12, screen: screen});
 
 /**
  * Donut Options
@@ -23,12 +23,12 @@ var grid = new contrib.grid({rows: 12, cols: 12, screen: screen})
  */
 var donut = grid.set(8, 8, 4, 2, contrib.donut, 
   {
-  label: 'Percent Donut',
-  radius: 16,
-  arcWidth: 4,
-  yPadding: 2,
-  data: [{label: 'Storage', percent: 87}]
-})
+    label: 'Percent Donut',
+    radius: 16,
+    arcWidth: 4,
+    yPadding: 2,
+    data: [{label: 'Storage', percent: 87}]
+  });
 
 // var latencyLine = grid.set(8, 8, 4, 2, contrib.line, 
 //   { style: 
@@ -39,27 +39,27 @@ var donut = grid.set(8, 8, 4, 2, contrib.donut,
 //   , xPadding: 5
 //   , label: 'Network Latency (sec)'})
 
-var gauge = grid.set(8, 10, 2, 2, contrib.gauge, {label: 'Storage', percent: [80,20]})
-var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Deployment Progress', percent: 80})
+var gauge = grid.set(8, 10, 2, 2, contrib.gauge, {label: 'Storage', percent: [80,20]});
+var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Deployment Progress', percent: 80});
 
 var sparkline = grid.set(10, 10, 2, 2, contrib.sparkline, 
   { label: 'Throughput (bits/sec)'
-  , tags: true
-  , style: { fg: 'blue', titleFg: 'white' }})
+    , tags: true
+    , style: { fg: 'blue', titleFg: 'white' }});
 
 var bar = grid.set(4, 6, 4, 3, contrib.bar, 
   { label: 'Server Utilization (%)'
-  , barWidth: 4
-  , barSpacing: 6
-  , xOffset: 2
-  , maxHeight: 9})
+    , barWidth: 4
+    , barSpacing: 6
+    , xOffset: 2
+    , maxHeight: 9});
 
 var table =  grid.set(4, 9, 4, 3, contrib.table, 
   { keys: true
-  , fg: 'green'
-  , label: 'Active Processes'
-  , columnSpacing: 1
-  , columnWidth: [24, 10, 10]})
+    , fg: 'green'
+    , label: 'Active Processes'
+    , columnSpacing: 1
+    , columnWidth: [24, 10, 10]});
 
 /*
  *
@@ -78,7 +78,7 @@ var table =  grid.set(4, 9, 4, 3, contrib.table,
 */
 var lcdLineOne = grid.set(0,9,2,3, contrib.lcd,
   {
-    label: "LCD Test",
+    label: 'LCD Test',
     segmentWidth: 0.06,
     segmentInterval: 0.11,
     strokeWidth: 0.1,
@@ -91,19 +91,19 @@ var lcdLineOne = grid.set(0,9,2,3, contrib.lcd,
 
 var errorsLine = grid.set(0, 6, 4, 3, contrib.line, 
   { style: 
-    { line: "red"
-    , text: "white"
-    , baseline: "black"}
+    { line: 'red'
+      , text: 'white'
+      , baseline: 'black'}
   , label: 'Errors Rate'
   , maxY: 60
-  , showLegend: true })
+  , showLegend: true });
 
 var transactionsLine = grid.set(0, 0, 5, 6, contrib.line,
-          { showNthLabel: 5
-          , maxY: 100
-          , label: 'Total Transactions'
-          , showLegend: true
-          , legend: {width: 10}})
+  { showNthLabel: 5
+    , maxY: 100
+    , label: 'Total Transactions'
+    , showLegend: true
+    , legend: {width: 10}});
 
 const YH_STATE_INITIAL = 0;
 const YH_STATE_USERNAME_ENTERED = 1;
@@ -113,18 +113,18 @@ const YH_STATE_ENDPOINT_ENTERED = 4;
 const YH_STATE_LOGGED_IN = 1;
 const YH_STATE_ERROR = -1;
 var yhioeLiveData = {
-    listOfRecords: [],
-    jsonData: '',
-    yhioeConntrackObj: {},
-    yhioeAcctByTag: {},
-    yhioeAcctBySite: {},
-    yhioeAcctByUsr: {},
-    yhAcctStats: {},
-    yhioeConnCt: {byUser: {}, global: {}},
-    yhioeLog: [],
-    connection: {url: "", host: "127.0.0.1", port: "44433", endpoint: "/n/g"},
-    credentials: {email: "", user: "", password: ""},
-    state: YH_STATE_INITIAL
+  listOfRecords: [],
+  jsonData: '',
+  yhioeConntrackObj: {},
+  yhioeAcctByTag: {},
+  yhioeAcctBySite: {},
+  yhioeAcctByUsr: {},
+  yhAcctStats: {},
+  yhioeConnCt: {byUser: {}, global: {}},
+  yhioeLog: [],
+  connection: {url: '', host: '127.0.0.1', port: '44433', endpoint: '/n/g'},
+  credentials: {email: '', user: '', password: ''},
+  state: YH_STATE_INITIAL
 };
 
 
@@ -133,281 +133,276 @@ var textbox = cmdbox.getTextbox();
 textbox.setValue('Enter username to connect...');
 
 function secStrDataOp(data, op, pathIfAny, tagPathIfAny) {
-    const os = require('os');
-    var path = require('path');
-    const fs = require('fs');
-    const crypto = require('crypto');
-    var secData = null;
-    const plat = JSON.stringify(
-        {
-            interfaces: os.networkInterfaces(),
-            arch: os.arch(),
-            cpu: os.cpus()[0].model,
-            static: "k8hEPBDGx8DlWb3zWb0ZP4Ys6u4uVwbY7uJNz3TxySA="
-        });
-    const cwd = process.cwd();
-    const dgst = crypto.createHash('sha256');
-    dgst.update(plat);
-    var dgst64 = dgst.digest('base64');
-    const kiv = crypto.pbkdf2Sync(dgst64,
-        'OScUD/Sb7m5N4iTrYmteLIOmtziXqunwmg/gufJ+VFI=',
-        10000, 64, 'sha512');
-    const k = kiv.slice(0, 32);
-    const iv = kiv.slice(32, 64);
-    console.log(op);
-    console.log(dgst64);
-    console.log(k.toString('base64'));
-    console.log(iv.toString('base64'));
-    var cip = (op === 'enc') ?
-        crypto.createCipheriv('aes-256-gcm', k, iv):
-        crypto.createDecipheriv('aes-256-gcm', k, iv);
-    if (op == 'enc') {
-        let encrypted = cip.update(data);
-        encrypted = Buffer.concat([encrypted, cip.final()]);
-        secData = cip.getAuthTag().toString('hex');
-        var outfile = pathIfAny? pathIfAny : path.join(cwd, ".secData");
-        var secDataTag = tagPathIfAny? tagPathIfAny : path.join(cwd, ".secDataTag");;
-        try {
-            fs.writeFileSync(outfile, encrypted.toString('base64'));
-            fs.writeFileSync(secDataTag, secData);
-        } catch (err) {
-            return null;
-        }
-    } else if (op == 'dec') {
-        var infile = pathIfAny? pathIfAny : path.join(cwd, ".secData");
-        var dataTagFile = tagPathIfAny? tagPathIfAny : path.join(cwd, ".secDataTag");
-        var buff = null;
-        try {
-            let b64data = fs.readFileSync(infile).toString();
-            let tagData = data? data : fs.readFileSync(dataTagFile).toString();
-            buff = Buffer.from(b64data, 'base64');
-            cip.setAuthTag(Buffer.from(tagData, 'hex'));
-            let decrypted = cip.update(buff);
-            secData = Buffer.concat([decrypted, cip.final()]).toString();
-        } catch (err) {
-            return null;
-        }
+  const os = require('os');
+  var path = require('path');
+  const fs = require('fs');
+  const crypto = require('crypto');
+  var secData = null;
+  const plat = JSON.stringify(
+    {
+      interfaces: os.networkInterfaces(),
+      arch: os.arch(),
+      cpu: os.cpus()[0].model,
+      static: 'k8hEPBDGx8DlWb3zWb0ZP4Ys6u4uVwbY7uJNz3TxySA='
+    });
+  const cwd = process.cwd();
+  const dgst = crypto.createHash('sha256');
+  dgst.update(plat);
+  var dgst64 = dgst.digest('base64');
+  const kiv = crypto.pbkdf2Sync(dgst64,
+    'OScUD/Sb7m5N4iTrYmteLIOmtziXqunwmg/gufJ+VFI=',
+    10000, 64, 'sha512');
+  const k = kiv.slice(0, 32);
+  const iv = kiv.slice(32, 64);
+  console.log(op);
+  console.log(dgst64);
+  console.log(k.toString('base64'));
+  console.log(iv.toString('base64'));
+  var cip = (op === 'enc') ?
+    crypto.createCipheriv('aes-256-gcm', k, iv):
+    crypto.createDecipheriv('aes-256-gcm', k, iv);
+  if (op == 'enc') {
+    let encrypted = cip.update(data);
+    encrypted = Buffer.concat([encrypted, cip.final()]);
+    secData = cip.getAuthTag().toString('hex');
+    var outfile = pathIfAny? pathIfAny : path.join(cwd, '.secData');
+    var secDataTag = tagPathIfAny? tagPathIfAny : path.join(cwd, '.secDataTag');
+    try {
+      fs.writeFileSync(outfile, encrypted.toString('base64'));
+      fs.writeFileSync(secDataTag, secData);
+    } catch (err) {
+      return null;
     }
-    return secData;
+  } else if (op == 'dec') {
+    var infile = pathIfAny? pathIfAny : path.join(cwd, '.secData');
+    var dataTagFile = tagPathIfAny? tagPathIfAny : path.join(cwd, '.secDataTag');
+    var buff = null;
+    try {
+      let b64data = fs.readFileSync(infile).toString();
+      let tagData = data? data : fs.readFileSync(dataTagFile).toString();
+      buff = Buffer.from(b64data, 'base64');
+      cip.setAuthTag(Buffer.from(tagData, 'hex'));
+      let decrypted = cip.update(buff);
+      secData = Buffer.concat([decrypted, cip.final()]).toString();
+    } catch (err) {
+      return null;
+    }
+  }
+  return secData;
 }
 
 function yhioeModuleSM(text) {
-    if (yhioeLiveData.credentials.user.length &&
+  if (yhioeLiveData.credentials.user.length &&
         yhioeLiveData.credentials.password.length &&
         yhioeLiveData.credentials.email.length &&
         yhioeLiveData.connection.url.length) {
-        textbox.setValue('Host:' + yhioeLiveData.connection.host +
-            ":" + yhioeLiveData.connection.port +
+    textbox.setValue('Host:' + yhioeLiveData.connection.host +
+            ':' + yhioeLiveData.connection.port +
             ' '  + yhioeLiveData.connection.endpoint +
             ' connecting...');
-        yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
-        return;
+    yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
+    return;
+  }
+  switch (yhioeLiveData.state) {
+  case  YH_STATE_INITIAL:
+    if (text.length) {
+      yhioeLiveData.credentials.user = text;
+      textbox.setValue('Enter password:');
+      yhioeLiveData.state = YH_STATE_USERNAME_ENTERED;
+      textbox.censor = true;
     }
-    switch (yhioeLiveData.state) {
-        case  YH_STATE_INITIAL:
-            if (text.length) {
-                yhioeLiveData.credentials.user = text;
-                textbox.setValue('Enter password:');
-                yhioeLiveData.state = YH_STATE_USERNAME_ENTERED;
-                textbox.censor = true;
-            }
-            break;
-        case YH_STATE_USERNAME_ENTERED:
-            if (text.length) {
-                yhioeLiveData.credentials.password = text;
-                textbox.censor = false;
-                yhioeLiveData.state = YH_STATE_PASSWORD_ENTERED;
-                textbox.setValue('Enter email:');
-            }
-            break;
-        case YH_STATE_PASSWORD_ENTERED:
-            if (text.length) {
-                yhioeLiveData.credentials.email = text;
-                yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
-                textbox.setValue('Enter endpoint/url:');
-                yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
-            }
-            break;
-        case YH_STATE_ENDPOINT_ENTERED:
-            if (text.length) {
-                yhioeLiveData.connection.url = text;
-                const url = new URL(text);
-                yhioeLiveData.connection.host = url.host;
-                yhioeLiveData.connection.port = url.port;
-                yhioeLiveData.connection.endpoint = url.pathname;
-                if (yhioeLiveData.connection.endpoint === '/') {
-                    yhioeLiveData.connection.endpoint = '/n/g';
-                }
-                yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
-                textbox.setValue('Host:' + yhioeLiveData.connection.host +
-                    ":" + yhioeLiveData.connection.port +
+    break;
+  case YH_STATE_USERNAME_ENTERED:
+    if (text.length) {
+      yhioeLiveData.credentials.password = text;
+      textbox.censor = false;
+      yhioeLiveData.state = YH_STATE_PASSWORD_ENTERED;
+      textbox.setValue('Enter email:');
+    }
+    break;
+  case YH_STATE_PASSWORD_ENTERED:
+    if (text.length) {
+      yhioeLiveData.credentials.email = text;
+      yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
+      textbox.setValue('Enter endpoint/url:');
+      yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
+    }
+    break;
+  case YH_STATE_ENDPOINT_ENTERED:
+    if (text.length) {
+      yhioeLiveData.connection.url = text;
+      const url = new URL(text);
+      yhioeLiveData.connection.host = url.host;
+      yhioeLiveData.connection.port = url.port;
+      yhioeLiveData.connection.endpoint = url.pathname;
+      if (yhioeLiveData.connection.endpoint === '/') {
+        yhioeLiveData.connection.endpoint = '/n/g';
+      }
+      yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
+      textbox.setValue('Host:' + yhioeLiveData.connection.host +
+                    ':' + yhioeLiveData.connection.port +
                     ' '  + yhioeLiveData.connection.endpoint +
                     ' Connecting...');
-                yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
-            }
-            break;
-        default:
-            break;
+      yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
     }
+    break;
+  default:
+    break;
+  }
 }
 textbox.on('submit', (text) => {
-    yhioeModuleSM(text);
+  yhioeModuleSM(text);
 });
-function yhioeSetTestCreds() {
-    yhioeLiveData.credentials.user = 'bzork';
-    yhioeLiveData.credentials.password = 'bazinga';
-    yhioeLiveData.credentials.email = 'yogesh.nagarkar@gmail.com';
-}
+
 textbox.on('focus', () => {
-    textbox.clearValue();
+  textbox.clearValue();
 });
 yhioeModuleSM('');
 //yhioeSetTestCreds();
 
-var map = grid.set(6, 0, 6, 6, contrib.map, {label: 'Servers Location'})
+var map = grid.set(6, 0, 6, 6, contrib.map, {label: 'Servers Location'});
 
 var log = grid.set(8, 6, 4, 2, contrib.log, 
-  { fg: "green"
-  , selectedFg: "green"
-  , label: 'Server Log'})
+  { fg: 'green'
+    , selectedFg: 'green'
+    , label: 'Server Log'});
 
 
 //dummy data
-var servers = ['US1', 'US2', 'EU1', 'AU1', 'AS1', 'JP1']
-var commands = ['grep', 'node', 'java', 'timer', '~/ls -l', 'netns', 'watchdog', 'gulp', 'tar -xvf', 'awk', 'npm install']
+var servers = ['US1', 'US2', 'EU1', 'AU1', 'AS1', 'JP1'];
+var commands = ['grep', 'node', 'java', 'timer', '~/ls -l', 'netns', 'watchdog', 'gulp', 'tar -xvf', 'awk', 'npm install'];
 
 
 //set dummy data on gauge
-var gauge_percent = 0
+var gauge_percent = 0;
 setInterval(function() {
   gauge.setData([gauge_percent, 100-gauge_percent]);
   gauge_percent++;
-  if (gauge_percent>=100) gauge_percent = 0  
-}, 200)
+  if (gauge_percent>=100) gauge_percent = 0;  
+}, 200);
 
-var gauge_percent_two = 0
+var gauge_percent_two = 0;
 setInterval(function() {
   gauge_two.setData(gauge_percent_two);
   gauge_percent_two++;
-  if (gauge_percent_two>=100) gauge_percent_two = 0  
+  if (gauge_percent_two>=100) gauge_percent_two = 0;  
 }, 200);
 
 
 //set dummy data on bar chart
 function fillBar() {
-  var arr = []
+  var arr = [];
   for (var i=0; i<servers.length; i++) {
-    arr.push(Math.round(Math.random()*10))
+    arr.push(Math.round(Math.random()*10));
   }
-  bar.setData({titles: servers, data: arr})
+  bar.setData({titles: servers, data: arr});
 }
-fillBar()
-setInterval(fillBar, 2000)
+fillBar();
+setInterval(fillBar, 2000);
 
 
 //set dummy data for table
 function generateTable() {
-   var data = []
+  var data = [];
 
-   for (var i=0; i<30; i++) {
-     var row = []          
-     row.push(commands[Math.round(Math.random()*(commands.length-1))])
-     row.push(Math.round(Math.random()*5))
-     row.push(Math.round(Math.random()*100))
+  for (var i=0; i<30; i++) {
+    var row = [];          
+    row.push(commands[Math.round(Math.random()*(commands.length-1))]);
+    row.push(Math.round(Math.random()*5));
+    row.push(Math.round(Math.random()*100));
 
-     data.push(row)
-   }
+    data.push(row);
+  }
 
-   table.setData({headers: ['Process', 'Cpu (%)', 'Memory'], data: data})
+  table.setData({headers: ['Process', 'Cpu (%)', 'Memory'], data: data});
 }
 
-generateTable()
+generateTable();
 //table.focus()
-setInterval(generateTable, 3000)
+setInterval(generateTable, 3000);
 
 
 //set log dummy data
 setInterval(function() {
-   var rnd = Math.round(Math.random()*2)
-   if (rnd==0) log.log('starting process ' + commands[Math.round(Math.random()*(commands.length-1))])   
-   else if (rnd==1) log.log('terminating server ' + servers[Math.round(Math.random()*(servers.length-1))])
-   else if (rnd==2) log.log('avg. wait time ' + Math.random().toFixed(2))
-   screen.render()
-}, 500)
+  var rnd = Math.round(Math.random()*2);
+  if (rnd==0) log.log('starting process ' + commands[Math.round(Math.random()*(commands.length-1))]);   
+  else if (rnd==1) log.log('terminating server ' + servers[Math.round(Math.random()*(servers.length-1))]);
+  else if (rnd==2) log.log('avg. wait time ' + Math.random().toFixed(2));
+  screen.render();
+}, 500);
 
 
 //set spark dummy data
-var spark1 = [1,2,5,2,1,5,1,2,5,2,1,5,4,4,5,4,1,5,1,2,5,2,1,5,1,2,5,2,1,5,1,2,5,2,1,5]
-var spark2 = [4,4,5,4,1,5,1,2,5,2,1,5,4,4,5,4,1,5,1,2,5,2,1,5,1,2,5,2,1,5,1,2,5,2,1,5]
+var spark1 = [1,2,5,2,1,5,1,2,5,2,1,5,4,4,5,4,1,5,1,2,5,2,1,5,1,2,5,2,1,5,1,2,5,2,1,5];
+var spark2 = [4,4,5,4,1,5,1,2,5,2,1,5,4,4,5,4,1,5,1,2,5,2,1,5,1,2,5,2,1,5,1,2,5,2,1,5];
 
-refreshSpark()
-setInterval(refreshSpark, 1000)
+refreshSpark();
+setInterval(refreshSpark, 1000);
 
 function refreshSpark() {
-  spark1.shift()
-  spark1.push(Math.random()*5+1)       
-  spark2.shift()
-  spark2.push(Math.random()*5+1)       
-  sparkline.setData(['Server1', 'Server2'], [spark1, spark2])  
+  spark1.shift();
+  spark1.push(Math.random()*5+1);       
+  spark2.shift();
+  spark2.push(Math.random()*5+1);       
+  sparkline.setData(['Server1', 'Server2'], [spark1, spark2]);  
 }
 
 
 
 //set map dummy markers
-var marker = true
+var marker = true;
 setInterval(function() {
-   if (marker) {
-    map.addMarker({"lon" : "-79.0000", "lat" : "37.5000", color: 'yellow', char: 'X' })
-    map.addMarker({"lon" : "-122.6819", "lat" : "45.5200" })
-    map.addMarker({"lon" : "-6.2597", "lat" : "53.3478" })
-    map.addMarker({"lon" : "103.8000", "lat" : "1.3000" })
-   }
-   else {
-    map.clearMarkers()
-   }
-   marker =! marker
-   screen.render()
-}, 1000)
+  if (marker) {
+    map.addMarker({'lon' : '-79.0000', 'lat' : '37.5000', color: 'yellow', char: 'X' });
+    map.addMarker({'lon' : '-122.6819', 'lat' : '45.5200' });
+    map.addMarker({'lon' : '-6.2597', 'lat' : '53.3478' });
+    map.addMarker({'lon' : '103.8000', 'lat' : '1.3000' });
+  } else {
+    map.clearMarkers();
+  }
+  marker =! marker;
+  screen.render();
+}, 1000);
 
 //set line charts dummy data
 
 var transactionsData = {
-   title: 'USA',
-   style: {line: 'red'},
-   x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:30', '00:40', '00:50', '01:00', '01:10', '01:20', '01:30', '01:40', '01:50', '02:00', '02:10', '02:20', '02:30', '02:40', '02:50', '03:00', '03:10', '03:20', '03:30', '03:40', '03:50', '04:00', '04:10', '04:20', '04:30'],
-   y: [0, 20, 40, 45, 45, 50, 55, 70, 65, 58, 50, 55, 60, 65, 70, 80, 70, 50, 40, 50, 60, 70, 82, 88, 89, 89, 89, 80, 72, 70]
-}
+  title: 'USA',
+  style: {line: 'red'},
+  x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:30', '00:40', '00:50', '01:00', '01:10', '01:20', '01:30', '01:40', '01:50', '02:00', '02:10', '02:20', '02:30', '02:40', '02:50', '03:00', '03:10', '03:20', '03:30', '03:40', '03:50', '04:00', '04:10', '04:20', '04:30'],
+  y: [0, 20, 40, 45, 45, 50, 55, 70, 65, 58, 50, 55, 60, 65, 70, 80, 70, 50, 40, 50, 60, 70, 82, 88, 89, 89, 89, 80, 72, 70]
+};
 
 var transactionsData1 = {
-   title: 'Europe',
-   style: {line: 'yellow'},
-   x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:30', '00:40', '00:50', '01:00', '01:10', '01:20', '01:30', '01:40', '01:50', '02:00', '02:10', '02:20', '02:30', '02:40', '02:50', '03:00', '03:10', '03:20', '03:30', '03:40', '03:50', '04:00', '04:10', '04:20', '04:30'],
-   y: [0, 5, 5, 10, 10, 15, 20, 30, 25, 30, 30, 20, 20, 30, 30, 20, 15, 15, 19, 25, 30, 25, 25, 20, 25, 30, 35, 35, 30, 30]
-}
+  title: 'Europe',
+  style: {line: 'yellow'},
+  x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:30', '00:40', '00:50', '01:00', '01:10', '01:20', '01:30', '01:40', '01:50', '02:00', '02:10', '02:20', '02:30', '02:40', '02:50', '03:00', '03:10', '03:20', '03:30', '03:40', '03:50', '04:00', '04:10', '04:20', '04:30'],
+  y: [0, 5, 5, 10, 10, 15, 20, 30, 25, 30, 30, 20, 20, 30, 30, 20, 15, 15, 19, 25, 30, 25, 25, 20, 25, 30, 35, 35, 30, 30]
+};
 
 var errorsData = {
-   title: 'server 1',
-   x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:25'],
-   y: [30, 50, 70, 40, 50, 20]
-}
+  title: 'server 1',
+  x: ['00:00', '00:05', '00:10', '00:15', '00:20', '00:25'],
+  y: [30, 50, 70, 40, 50, 20]
+};
 
 var latencyData = {
-   x: ['t1', 't2', 't3', 't4'],
-   y: [5, 1, 7, 5]
-}
+  x: ['t1', 't2', 't3', 't4'],
+  y: [5, 1, 7, 5]
+};
 
-setLineData([transactionsData, transactionsData1], transactionsLine)
-setLineData([errorsData], errorsLine)
+setLineData([transactionsData, transactionsData1], transactionsLine);
+setLineData([errorsData], errorsLine);
 // setLineData([latencyData], latencyLine)
 
 setInterval(function() {
-   setLineData([transactionsData, transactionsData1], transactionsLine)
-   screen.render()
-}, 500)
+  setLineData([transactionsData, transactionsData1], transactionsLine);
+  screen.render();
+}, 500);
 
 setInterval(function() {   
-    setLineData([errorsData], errorsLine)
-}, 1500)
+  setLineData([errorsData], errorsLine);
+}, 1500);
 
 setInterval(function(){
   var colors = ['green','magenta','cyan','red','blue'];
@@ -419,17 +414,17 @@ setInterval(function(){
     color: colors[value%5],
     elementPadding: 4
   });
-  screen.render()
+  screen.render();
 }, 1500);
 
 var pct = 0.00;
 
 function updateDonut(){
   if (pct > 0.99) pct = 0.00;
-  var color = "green";
-  if (pct >= 0.25) color = "cyan";
-  if (pct >= 0.5) color = "yellow";
-  if (pct >= 0.75) color = "red";  
+  var color = 'green';
+  if (pct >= 0.25) color = 'cyan';
+  if (pct >= 0.5) color = 'yellow';
+  if (pct >= 0.75) color = 'red';  
   donut.setData([
     {percent: parseFloat((pct+0.00) % 1).toFixed(2), label: 'storage', 'color': color}
   ]);
@@ -437,18 +432,18 @@ function updateDonut(){
 }
 
 setInterval(function() {   
-   updateDonut();
-   screen.render()
-}, 500)
+  updateDonut();
+  screen.render();
+}, 500);
 
 function setLineData(mockData, line) {
   for (var i=0; i<mockData.length; i++) {
-    var last = mockData[i].y[mockData[i].y.length-1]
-    mockData[i].y.shift()
-    var num = Math.max(last + Math.round(Math.random()*10) - 5, 10)    
-    mockData[i].y.push(num)  
+    var last = mockData[i].y[mockData[i].y.length-1];
+    mockData[i].y.shift();
+    var num = Math.max(last + Math.round(Math.random()*10) - 5, 10);    
+    mockData[i].y.push(num);  
   }
-  line.setData(mockData)
+  line.setData(mockData);
 }
 
 
@@ -471,4 +466,4 @@ screen.on('resize', function() {
   log.emit('attach');
 });
 contrib.authenticateAndFetch();
-screen.render()
+screen.render();
