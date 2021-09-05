@@ -18,6 +18,7 @@ declare namespace BlessedContrib {
         import ListElementStyle = Blessed.Widgets.ListElementStyle;
         import BoxElement = Blessed.Widgets.BoxElement;
         import ListElement = Blessed.Widgets.ListElement;
+        import TextboxElement = Blessed.Widgets.TextboxElement;
 
         export interface GridOptions {
 
@@ -48,7 +49,7 @@ declare namespace BlessedContrib {
             | GaugeOptions
             | GaugeListOptions
             | DonutOptions
-
+            | InputboxOptions
 
         export type WidgetElements = BoxElement
             | BarElement
@@ -66,6 +67,7 @@ declare namespace BlessedContrib {
             | GaugeElement
             | GaugeListElement
             | DonutElement
+            | InputboxElement
 
 
         export class GridElement extends BoxElement implements IHasOptions<GridOptions> {
@@ -76,6 +78,7 @@ declare namespace BlessedContrib {
             set<T extends (options?: PictureOptions) => S, S extends PictureElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: PictureOptions): PictureElement
             set<T extends (options?: MarkdownOptions) => S, S extends MarkdownElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: MarkdownOptions): MarkdownElement
             set<T extends (options?: MapOptions) => S, S extends MapElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: MapOptions): MapElement
+            set<T extends (options?: InputboxOptions) => S, S extends InputboxElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: InputboxOptions): InputboxElement
             set<T extends (options?: LogOptions) => S, S extends LogElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: LogOptions): LogElement
             set<T extends (options?: LcdOptions) => S, S extends LcdElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: LcdOptions): LcdElement
             set<T extends (options?: GaugeOptions) => S, S extends GaugeElement>(row: number, col: number, rowSpan: number, colSpan: number, obj: T, opt: GaugeOptions): GaugeElement
@@ -245,6 +248,15 @@ declare namespace BlessedContrib {
 
         }
 
+        export interface InputboxOptions extends Blessed.Widgets.TextboxOptions {
+            label?: string
+        }
+
+        export class InputboxElement extends TextboxElement implements IHasOptions<InputboxOptions> {
+            constructor(opts: InputboxOptions)
+            options: InputboxOptions;
+
+        }
 
         export interface GaugeListOptions extends CanvasOptions {
         }
@@ -330,7 +342,6 @@ declare namespace BlessedContrib {
             emit(str:any): boolean;
         }
 
-
         export interface MapOptions extends CanvasOptions {
         }
 
@@ -339,7 +350,6 @@ declare namespace BlessedContrib {
 
             options: MapOptions;
         }
-
 
         export interface SparklineOptions extends CanvasOptions<string[]> {
         }
@@ -370,7 +380,6 @@ declare namespace BlessedContrib {
 
             setMarkdown(markdown: string): void;
         }
-
 
         export interface PictureOptions extends CanvasOptions {
         }
@@ -409,18 +418,6 @@ declare namespace BlessedContrib {
             options: TableOptions;
         }
 
-
-        export interface TreeNode {
-            name?: string,
-            children?: TreeChildren | ((node: TreeNode) => TreeChildren | Promise<TreeChildren>),
-            childrenContent?: TreeChildren,
-            extended?: boolean,
-            parent?: TreeNode,
-            [custom: string]: any
-        }
-
-        export type TreeChildren = Record<string, TreeNode>
-
         export interface TreeOptions extends BoxOptions {
             data?: any
             extended?: boolean
@@ -441,8 +438,6 @@ declare namespace BlessedContrib {
             data: any
 
             options: TreeOptions;
-
-            setData(data: TreeNode): void
         }
 
 
@@ -471,6 +466,8 @@ declare namespace BlessedContrib {
         export class Map extends Widgets.MapElement {}
 
         export class Log extends Widgets.LogElement {}
+
+        export class Inputbox extends Widgets.InputboxElement {}
 
         export class Lcd extends Widgets.LcdElement {}
 
@@ -506,6 +503,8 @@ declare namespace BlessedContrib {
     export function sparkline(options?: Widgets.SparklineOptions): Widgets.SparklineElement
 
     export function map(options?: Widgets.MapOptions): Widgets.MapElement
+
+    export function inputbox(options?: Widgets.InputboxOptions): Widgets.InputboxElement
 
     export function log(options?: Widgets.LogOptions): Widgets.LogElement
 

@@ -1,7 +1,15 @@
 var blessed = require('blessed')
   , contrib = require('../index')
+var _ = require('lodash');
 
-var screen = blessed.screen()
+var screen = blessed.screen({
+    smartCSR: true,
+    useBCE: true,
+    cursor: {
+        artificial: true,
+        blink: true,
+        shape: 'underline'
+    }})
 
 //create layout and widgets
 
@@ -90,12 +98,171 @@ var errorsLine = grid.set(0, 6, 4, 3, contrib.line,
   , maxY: 60
   , showLegend: true })
 
-var transactionsLine = grid.set(0, 0, 6, 6, contrib.line, 
+var transactionsLine = grid.set(0, 0, 5, 6, contrib.line,
           { showNthLabel: 5
           , maxY: 100
           , label: 'Total Transactions'
           , showLegend: true
           , legend: {width: 10}})
+
+const YH_STATE_INITIAL = 0;
+const YH_STATE_USERNAME_ENTERED = 1;
+const YH_STATE_PASSWORD_ENTERED = 2;
+const YH_STATE_EMAIL_ENTERED = 3;
+const YH_STATE_ENDPOINT_ENTERED = 4;
+const YH_STATE_LOGGED_IN = 1;
+const YH_STATE_ERROR = -1;
+var yhioeLiveData = {
+    listOfRecords: [],
+    jsonData: '',
+    yhioeConntrackObj: {},
+    yhioeAcctByTag: {},
+    yhioeAcctBySite: {},
+    yhioeAcctByUsr: {},
+    yhAcctStats: {},
+    yhioeConnCt: {byUser: {}, global: {}},
+    yhioeLog: [],
+    connection: {url: "", host: "127.0.0.1", port: "44433", endpoint: "/n/g"},
+    credentials: {email: "", user: "", password: ""},
+    state: YH_STATE_INITIAL
+};
+
+
+var cmdbox = grid.set(5, 0, 1, 6, contrib.inputbox, {label: 'Command'});
+var textbox = cmdbox.getTextbox();
+textbox.setValue('Enter username to connect...');
+
+function secStrDataOp(data, op, pathIfAny, tagPathIfAny) {
+    const os = require('os');
+    var path = require('path');
+    const fs = require('fs');
+    const crypto = require('crypto');
+    var secData = null;
+    const plat = JSON.stringify(
+        {
+            interfaces: os.networkInterfaces(),
+            arch: os.arch(),
+            cpu: os.cpus()[0].model,
+            static: "k8hEPBDGx8DlWb3zWb0ZP4Ys6u4uVwbY7uJNz3TxySA="
+        });
+    const cwd = process.cwd();
+    const dgst = crypto.createHash('sha256');
+    dgst.update(plat);
+    var dgst64 = dgst.digest('base64');
+    const kiv = crypto.pbkdf2Sync(dgst64,
+        'OScUD/Sb7m5N4iTrYmteLIOmtziXqunwmg/gufJ+VFI=',
+        10000, 64, 'sha512');
+    const k = kiv.slice(0, 32);
+    const iv = kiv.slice(32, 64);
+    console.log(op);
+    console.log(dgst64);
+    console.log(k.toString('base64'));
+    console.log(iv.toString('base64'));
+    var cip = (op === 'enc') ?
+        crypto.createCipheriv('aes-256-gcm', k, iv):
+        crypto.createDecipheriv('aes-256-gcm', k, iv);
+    if (op == 'enc') {
+        let encrypted = cip.update(data);
+        encrypted = Buffer.concat([encrypted, cip.final()]);
+        secData = cip.getAuthTag().toString('hex');
+        var outfile = pathIfAny? pathIfAny : path.join(cwd, ".secData");
+        var secDataTag = tagPathIfAny? tagPathIfAny : path.join(cwd, ".secDataTag");;
+        try {
+            fs.writeFileSync(outfile, encrypted.toString('base64'));
+            fs.writeFileSync(secDataTag, secData);
+        } catch (err) {
+            return null;
+        }
+    } else if (op == 'dec') {
+        var infile = pathIfAny? pathIfAny : path.join(cwd, ".secData");
+        var dataTagFile = tagPathIfAny? tagPathIfAny : path.join(cwd, ".secDataTag");
+        var buff = null;
+        try {
+            let b64data = fs.readFileSync(infile).toString();
+            let tagData = data? data : fs.readFileSync(dataTagFile).toString();
+            buff = Buffer.from(b64data, 'base64');
+            cip.setAuthTag(Buffer.from(tagData, 'hex'));
+            let decrypted = cip.update(buff);
+            secData = Buffer.concat([decrypted, cip.final()]).toString();
+        } catch (err) {
+            return null;
+        }
+    }
+    return secData;
+}
+
+function yhioeModuleSM(text) {
+    if (yhioeLiveData.credentials.user.length &&
+        yhioeLiveData.credentials.password.length &&
+        yhioeLiveData.credentials.email.length &&
+        yhioeLiveData.connection.url.length) {
+        textbox.setValue('Host:' + yhioeLiveData.connection.host +
+            ":" + yhioeLiveData.connection.port +
+            ' '  + yhioeLiveData.connection.endpoint +
+            ' connecting...');
+        yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
+        return;
+    }
+    switch (yhioeLiveData.state) {
+        case  YH_STATE_INITIAL:
+            if (text.length) {
+                yhioeLiveData.credentials.user = text;
+                textbox.setValue('Enter password:');
+                yhioeLiveData.state = YH_STATE_USERNAME_ENTERED;
+                textbox.censor = true;
+            }
+            break;
+        case YH_STATE_USERNAME_ENTERED:
+            if (text.length) {
+                yhioeLiveData.credentials.password = text;
+                textbox.censor = false;
+                yhioeLiveData.state = YH_STATE_PASSWORD_ENTERED;
+                textbox.setValue('Enter email:');
+            }
+            break;
+        case YH_STATE_PASSWORD_ENTERED:
+            if (text.length) {
+                yhioeLiveData.credentials.email = text;
+                yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
+                textbox.setValue('Enter endpoint/url:');
+                yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
+            }
+            break;
+        case YH_STATE_ENDPOINT_ENTERED:
+            if (text.length) {
+                yhioeLiveData.connection.url = text;
+                const url = new URL(text);
+                yhioeLiveData.connection.host = url.host;
+                yhioeLiveData.connection.port = url.port;
+                yhioeLiveData.connection.endpoint = url.pathname;
+                if (yhioeLiveData.connection.endpoint === '/') {
+                    yhioeLiveData.connection.endpoint = '/n/g';
+                }
+                yhioeLiveData.state = YH_STATE_EMAIL_ENTERED;
+                textbox.setValue('Host:' + yhioeLiveData.connection.host +
+                    ":" + yhioeLiveData.connection.port +
+                    ' '  + yhioeLiveData.connection.endpoint +
+                    ' Connecting...');
+                yhioeLiveData.state = YH_STATE_ENDPOINT_ENTERED;
+            }
+            break;
+        default:
+            break;
+    }
+}
+textbox.on('submit', (text) => {
+    yhioeModuleSM(text);
+});
+function yhioeSetTestCreds() {
+    yhioeLiveData.credentials.user = 'bzork';
+    yhioeLiveData.credentials.password = 'bazinga';
+    yhioeLiveData.credentials.email = 'yogesh.nagarkar@gmail.com';
+}
+textbox.on('focus', () => {
+    textbox.clearValue();
+});
+yhioeModuleSM('');
+//yhioeSetTestCreds();
 
 var map = grid.set(6, 0, 6, 6, contrib.map, {label: 'Servers Location'})
 
@@ -155,7 +322,7 @@ function generateTable() {
 }
 
 generateTable()
-table.focus()
+//table.focus()
 setInterval(generateTable, 3000)
 
 
@@ -244,7 +411,7 @@ setInterval(function() {
 
 setInterval(function(){
   var colors = ['green','magenta','cyan','red','blue'];
-  var text = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  var text = ['A','B','C','D','E','F' ,'G','H','I','J','K','L'];
 
   var value = Math.round(Math.random() * 100);
   lcdLineOne.setDisplay(value + text[value%12]);
@@ -281,7 +448,6 @@ function setLineData(mockData, line) {
     var num = Math.max(last + Math.round(Math.random()*10) - 5, 10)    
     mockData[i].y.push(num)  
   }
-  
   line.setData(mockData)
 }
 
@@ -304,5 +470,5 @@ screen.on('resize', function() {
   map.emit('attach');
   log.emit('attach');
 });
-
+contrib.authenticateAndFetch();
 screen.render()
