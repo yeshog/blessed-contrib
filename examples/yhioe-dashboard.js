@@ -31,7 +31,26 @@ var donut = grid.set(8, 8, 4, 2, contrib.donut,
 })
 var gauge = grid.set(8, 10, 2, 2, contrib.gauge, {label: 'Storage', percent: [80,20]})
  */
-var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Deployment Progress', percent: 80});
+
+const yhioeGetMemUsed = () => {
+  for (let [dvc, snap] of Object.entries(contrib.yhioeLiveData.devices)) {
+    let health = snap.health;
+    if (health.hasOwnProperty('yh_memory_used')) {
+      return health.yh_memory_used;
+    } else {
+      yhioeLogMsg('yh_memory_used field not found');
+    }
+  }
+  return 0;
+};
+
+var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Memory',
+  percent: yhioeGetMemUsed()});
+
+setInterval(function() {
+  gauge_two.setData(yhioeGetMemUsed());
+}, 30000);
+
 var connectionCountsLine = grid.set(8, 8, 4, 4, contrib.line,
   { showNthLabel: 5
     , maxY: 100
@@ -118,7 +137,7 @@ contrib.yhioeSetTextboxRef(textbox);
 var map = grid.set(6, 0, 6, 6, contrib.map, {label: 'Destination'});
 var log = grid.set(8, 6, 4, 2, contrib.log,
   { fg: 'green'
-    , selectedFg: 'green'
+    , selectedFg: 'green '
     , label: 'Logs'});
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
@@ -127,12 +146,12 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
 
 // fixes https://github.com/yaronn/blessed-contrib/issues/10
 screen.on('resize', function() {
-  donut.emit('attach');
-  gauge.emit('attach');
+  // donut.emit('attach');
+  // gauge.emit('attach');
   gauge_two.emit('attach');
-  sparkline.emit('attach');
+  // sparkline.emit('attach');
   bar.emit('attach');
-  table.emit('attach');
+  // table.emit('attach');
   lcdLineOne.emit('attach');
   errorsLine.emit('attach');
   activityTable.emit('attach');
