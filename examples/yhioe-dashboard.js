@@ -20,35 +20,61 @@ contrib.yhioeSetScreenRef(screen);
 //create layout and widgets
 
 var grid = new contrib.grid({rows: 12, cols: 12, screen: screen});
-/*
-var donut = grid.set(8, 8, 4, 2, contrib.donut,
-  {
-  label: 'Memory',
-  radius: 16,
-  arcWidth: 4,
-  yPadding: 2,
-  data: [{label: 'Used', percent: 14} ]
-})
-var gauge = grid.set(8, 10, 2, 2, contrib.gauge, {label: 'Storage', percent: [80,20]})
- */
+
+// var donut = grid.set(2, 9, 2, 2, contrib.donut,
+//   {
+//     label: 'Memory',
+//     radius: 16,
+//     arcWidth: 4,
+//     yPadding: 2,
+//     data: [{label: 'Used', percent: 14} ]
+//   });
+
+//var gauge = grid.set(8, 10, 2, 2, contrib.gauge, {label: 'Storage', percent: [80,20]})
+
+
+const yhioeGetHealth = (sortBy, maxrecs) => {
+  let sorted = [...contrib.yhioeLiveData.device_health].sort(
+    (a, b) => a[sortBy] > b[sortBy]? 1 : -1);
+  return sorted.slice(0, maxrecs);
+};
 
 const yhioeGetMemUsed = () => {
-  for (let [dvc, snap] of Object.entries(contrib.yhioeLiveData.devices)) {
-    let health = snap.health;
-    if (health.hasOwnProperty('yh_memory_used')) {
-      return health.yh_memory_used;
-    } else {
-      yhioeLogMsg('yh_memory_used field not found');
-    }
+  var m = yhioeGetHealth('yh_memory_used', 1);
+  //yhioeLogMsg('most mem used record ' + m.length);
+  if (m.length) {
+    //yhioeLogMsg('most mem used record ' + m[0].yh_memory_used);
+    return m[0].yh_memory_used;
   }
   return 0;
 };
 
+const yhioeGetCPU = () => {
+  var m = yhioeGetHealth('cpu', 1);
+  //yhioeLogMsg('most cpu used record ' + m.length);
+  if (m.length) {
+    //yhioeLogMsg('most cpu used record ' + m[0].yh_cpu);
+    return m[0].yh_cpu;
+  }
+  return 0;
+};
+
+
 var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Memory',
-  percent: yhioeGetMemUsed()});
+  percent: 0});
+// var gauge_three = grid.set(3, 9, 1, 3, contrib.gauge, {label: 'CPU',
+//   percent: 100});
 
 setInterval(function() {
-  gauge_two.setData(yhioeGetMemUsed());
+  var m = yhioeGetMemUsed();
+  yhioeLogMsg('..mem used ' + m);
+  gauge_two.setLabel('Memory');
+  gauge_two.setData(m);
+  setTimeout(function() {
+    let m = yhioeGetCPU();
+    gauge_two.setLabel('CPU');
+    gauge_two.setData(m);
+  }, 3000);
 }, 30000);
 
 var connectionCountsLine = grid.set(8, 8, 4, 4, contrib.line,
