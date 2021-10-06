@@ -66,14 +66,32 @@ var gauge_two = grid.set(2, 9, 2, 3, contrib.gauge, {label: 'Memory',
 //   percent: 100});
 
 setInterval(function() {
-  var m = yhioeGetMemUsed();
+  var r = yhioeGetHealth('yh_memory_used', 1);
+  if (!r.length) {
+    return;
+  }
+  let rec = r[0];
+  var m = rec.yh_memory_used;
   yhioeLogMsg('..mem used ' + m);
   gauge_two.setLabel('Memory');
   gauge_two.setData(m);
+  yhioeLogMsg('df ' + JSON.stringify(rec.yh_df));
+  for (var j = 0; j < rec.yh_df.length; j++) {
+    let logline = rec.yh_df[j]['Filesystem'] + ' ' +
+      rec.yh_df[j]['Size'] + ' ' + rec.yh_df[j]['Use'];
+    snapshotTables.log(logline);
+  }
   setTimeout(function() {
-    let m = yhioeGetCPU();
+    let c = rec.yh_cpu;
     gauge_two.setLabel('CPU');
-    gauge_two.setData(m);
+    gauge_two.setData(c);
+    yhioeLogMsg('top ' + JSON.stringify(rec.yh_top));
+    for (var j = 0; j < rec.yh_df.length; j++) {
+      let logline =
+        rec.yh_top[j]['COMMAND'].split('/').slice(-1)[0] + ' ' +
+        rec.yh_top[j]['CPU'] + ' ' + rec.yh_top[j]['MEM'];
+      snapshotTables.log(logline);
+    }
   }, 3000);
 }, 30000);
 
@@ -91,10 +109,8 @@ var bar = grid.set(4, 9, 4, 3, contrib.bar,
     , xOffset: 2
     , maxHeight: 9});
 
-var connectionsLine =  grid.set(6, 6, 2, 3, contrib.line,
-  { label: 'Active Connections'
-    , tags: true
-    , style: { fg: 'blue', titleFg: 'white' }});
+var snapshotTables =  grid.set(6, 6, 2, 3, contrib.log,
+  { label: 'Snapshot', selectedFg: 'green', fg: 'green'});
 
 function yhGetTimestamp() {
   var d = new Date();
@@ -183,6 +199,7 @@ screen.on('resize', function() {
   activityTable.emit('attach');
   map.emit('attach');
   log.emit('attach');
+  snapshotTables.emit('attach');
   cmdbox.emit('attach');
 });
 
