@@ -306,6 +306,7 @@ setInterval(function() {
 
 setInterval(() => {
   yhioeGlobalSiteStats();
+  // yhioeLogMsg('tag stats ' + JSON.stringify(contrib.yhioeLiveData.yhioeAcctByTag));
 }, 3000);
 
 function yhioeCheckArgs() {
